@@ -1,0 +1,56 @@
+i=6
+while i >= 0:
+    print("Press 1 for Trending Movies")
+    print("Press 2 for Recommendations")
+    print("Press 3 for Exit")
+    option=int(input("Enter your Choce: "))
+    if option == 1:
+        print("Hello 1")
+        break
+    elif option == 2:
+        import pandas as pd
+        from scipy.sparse import csr_matrix
+        from sklearn.neighbors import NearestNeighbors
+        from fuzzywuzzy import process
+
+        movies = 'IMDB-Movie-Data.csv'
+
+        df_movies = pd.read_csv(movies, usecols=['Title', 'Genre', 'Rating'],
+                                dtype={'Title': 'str', 'Genre': 'str', 'Rating': 'float32'})
+
+        # Sparse Matrix
+        movies_users = df_movies.pivot(index='Title', columns='Genre', values='Rating').fillna(0)
+        mat_movies_users = csr_matrix(movies_users.values)
+
+        # Euclidean Distance
+        # Manhattan Distance
+        # Minkowski Distance
+        # Cosine Similarity
+        model_knn = NearestNeighbors(metric='cosine', algorithm='brute', n_neighbors=int(10))
+
+        model_knn.fit(mat_movies_users)
+
+
+        def recommender(genre_name, data, model, n_recommendations):
+            model.fit(data)
+            idx = process.extractOne(genre_name, df_movies['Genre'])[2]
+            # print('\n')
+            print('Genre Selected:', df_movies['Genre'][idx], 'Index: ', idx, '\n')
+            print('Searching for recommendations.....')
+            print('Movies Recommended for the Entered Genre are....\n')
+            distances, indices = model.kneighbors(data[idx], n_neighbors=n_recommendations)
+            for i in indices:
+                print(df_movies['Title'][i].where(i != idx))
+
+
+        recommender(input("Enter Genre: "), mat_movies_users, model_knn, 10)
+
+
+        break
+    elif option == 3:
+        print("Hello 3")
+        #sys.exit()
+        break
+    else:
+        print("Please enter a valid option")
+        break

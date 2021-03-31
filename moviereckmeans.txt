@@ -1,0 +1,58 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
+df=pd.read_csv("IMDB-Movie-Data.csv")
+df1=df.sort_values(by=["Rating","Votes"],ascending=False)
+df1.head()
+
+from sklearn.preprocessing import StandardScaler
+x=df1.iloc[:,[8,9]].values
+sc=StandardScaler()
+sc.fit(x)
+a=np.array(x[:,0]).reshape(len(x[:,0]),1)
+b=np.array(x[:,1]).reshape(len(x[:,1]),1)
+plt.scatter(a,b,c="blue")
+plt.xlabel("ratings")
+plt.ylabel("votes")
+plt.show()#visualizing votes according to ratings
+
+from sklearn.cluster import KMeans
+wcss=[]
+for i in range(1, 11):
+    kmeans = KMeans(n_clusters = i, init = 'k-means++', random_state = 0)
+    kmeans.fit(x)
+    wcss.append(kmeans.inertia_)
+plt.plot(range(1, 11), wcss)
+plt.title('The Elbow Method')
+plt.xlabel('Number of clusters')
+plt.ylabel('WCSS')
+plt.show()
+
+kmeans=KMeans(n_clusters=4,init='k-means++',random_state=0)
+kmeans.fit(x)
+y_kmeans=kmeans.predict(x)
+y_kmeans
+
+df1["category"]=y_kmeans
+
+
+df2=df1.loc[:,['Title','Genre','category']]
+df2
+#3-best movie
+#2-good movie
+#1-worst movie
+#0-satisfactory movie
+
+plt.scatter(x[y_kmeans == 3, 0], x[y_kmeans == 3, 1], s = 100, c = 'cyan', label = 'best movies')
+plt.scatter(x[y_kmeans == 2, 0], x[y_kmeans == 2, 1], s = 100, c = 'green', label = 'good movies')
+plt.scatter(x[y_kmeans == 0, 0], x[y_kmeans == 0, 1], s = 100, c = 'red', label = 'satisfactory movies')
+plt.scatter(x[y_kmeans == 1, 0], x[y_kmeans == 1, 1], s = 100, c = 'blue', label = 'worst movies')
+
+
+plt.title('Clusters of movies')
+
+plt.legend()
+plt.show()
+
+
